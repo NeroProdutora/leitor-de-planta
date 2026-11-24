@@ -1,0 +1,8 @@
+.venv/
+__pycache__/
+.DS_Store
+# a planta do seu cliente fica no seu computador
+planta/*
+!planta/LEIA-ME.md
+saida/*
+!saida/LEIA-ME.md

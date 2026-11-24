@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{titulo}}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root { --papel: #f5f3ef; --tinta: #1e1e1e; --cinza: #67625b; --bronze: #9a7b4f; }
+  * { box-sizing: border-box; margin: 0; }
+  body { background: var(--papel); color: var(--tinta); font-family: Jost, system-ui, sans-serif; font-weight: 400; }
+  main { max-width: 1280px; margin: 0 auto; padding: 32px 24px 48px; }
+  header { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; margin-bottom: 24px; }
+  .titulo { font-size: 13px; letter-spacing: .18em; text-transform: uppercase; }
+  .conta { font-size: 13px; letter-spacing: .18em; text-transform: uppercase; color: var(--cinza); }
+  .planta { width: 100%; max-height: calc(100svh - 240px); display: block; margin: 0 auto; touch-action: manipulation; }
+  .planta .alvo { fill: transparent; cursor: pointer; }
+  .legenda { min-height: 96px; margin-top: 24px; display: flex; align-items: baseline; gap: 16px; }
+  .nome { font-size: 40px; font-weight: 400; line-height: 1.1; }
+  .area { font-size: 13px; letter-spacing: .18em; text-transform: uppercase; color: var(--cinza); }
+  .texto { font-size: 16px; line-height: 1.5; color: var(--cinza); max-width: 56ch; margin-top: 8px; }
+  nav { display: flex; flex-wrap: wrap; gap: 8px 24px; margin-top: 16px; padding-top: 16px; border-top: 1px solid color-mix(in srgb, var(--tinta) 15%, var(--papel)); }
+  nav button { all: unset; cursor: pointer; font-size: 13px; letter-spacing: .18em; text-transform: uppercase; color: var(--cinza); padding: 4px 0; }
+  nav button[aria-current="true"], nav button:hover, nav button:focus-visible { color: var(--tinta); }
+  /*TEMA*/
+  @media (max-width: 640px) {
+    main { padding: 24px 16px 40px; }
+    .nome { font-size: 28px; }
+    .legenda { min-height: 72px; flex-direction: column; gap: 4px; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <header><span class="titulo" id="titulo"></span><span class="conta" id="conta"></span></header>
+  <svg class="planta" id="planta" preserveAspectRatio="xMidYMid meet" role="img"></svg>
+  <div class="legenda"><span class="nome" id="nome"></span><span class="area" id="area"></span></div>
+  <p class="texto" id="texto"></p>
+  <nav id="indice" aria-label="Ambientes"></nav>
+</main>
+<script>
+var P = /*DADOS*/;
+(function () {
+  var NS = "http://www.w3.org/2000/svg", DUR = 420, VEU = 0.66;
+  var svg = document.getElementById("planta");
+  function el(tag, at, pai) { var e = document.createElementNS(NS, tag); for (var k in at) e.setAttribute(k, at[k]); if (pai) pai.appendChild(e); return e; }
+  svg.setAttribute("viewBox", "0 0 " + P.w + " " + P.h);
+  document.getElementById("titulo").textContent = P.titulo;
+  document.getElementById("conta").textContent = P.comodos.length + " ambientes";
+
+  var defs = el("defs", {}, svg);
+  // multiply: o branco do papel da planta vira a cor de fundo da pagina
+  el("image", { href: "planta.jpg", width: P.w, height: P.h, style: "mix-blend-mode: multiply" }, svg);
+  var cores = el("g", {}, svg);
+  el("image", { href: "linhas.png", width: P.w, height: P.h, "pointer-events": "none" }, svg);
+  var veu = el("path", { fill: getComputedStyle(document.body).backgroundColor, "fill-opacity": 0, "fill-rule": "evenodd", "pointer-events": "none" }, svg);
+  var bordas = el("g", { "pointer-events": "none" }, svg);
+  var alvos = el("g", {}, svg);
+  var indice = document.getElementById("indice");
+
+  var C = P.comodos.map(function (c, i) {
+    var b = c.caixa;
+    var clip = el("clipPath", { id: "c" + i }, defs);
+    var r = el("rect", { x: b[0], y: b[1], width: 0, height: b[3] }, clip);
+    var fill = el("path", { d: c.d, fill: c.cor, "clip-path": "url(#c" + i + ")" }, cores);
+    var borda = el("path", { d: c.d, fill: "none", stroke: "var(--bronze)", "stroke-width": Math.max(2, P.w / 600), "stroke-opacity": 0 }, bordas);
+    var alvo = el("path", { d: c.d, "class": "alvo", tabindex: 0, "aria-label": c.nome }, alvos);
+    var bt = document.createElement("button"); bt.textContent = c.nome; indice.appendChild(bt);
+    alvo.addEventListener("mouseenter", function () { entrar(i); });
+    alvo.addEventListener("focus", function () { entrar(i); });
+    alvo.addEventListener("click", function (e) { e.stopPropagation(); entrar(i); });
+    bt.addEventListener("mouseenter", function () { entrar(i); });
+    bt.addEventListener("focus", function () { entrar(i); });
+    bt.addEventListener("click", function () { entrar(i); });
+    return { c: c, r: r, borda: borda, bt: bt, fill: fill };
+  });
+  var todos = false;    // painel de cor: todos os ambientes acesos ao mesmo tempo
+
+  /* toda animacao tem prazo final por setTimeout: rAF congela em aba escondida */
+  function animar(de, ate, dur, passo, fim) {
+    var t0 = performance.now(), feito = false;
+    function acabar() { if (feito) return; feito = true; passo(ate); if (fim) fim(); }
+    function q(t) { if (feito) return; var p = Math.min(1, (t - t0) / dur); var e = p < .5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2; passo(de + (ate - de) * e); if (p < 1) requestAnimationFrame(q); else acabar(); }
+    requestAnimationFrame(q); setTimeout(acabar, dur + 80);
+    return function () { feito = true; };
+  }
+
+  var atual = -1, parar = null, pararNome = null;
+  /* o nome entra varrendo, no mesmo sentido da cor (sem fade) */
+  function varrerNome(de, ate, dur) {
+    if (pararNome) pararNome();
+    pararNome = animar(de, ate, dur, function (v) { nome.style.clipPath = "inset(0 " + (100 - v) + "% 0 0)"; });
+  }
+  var nome = document.getElementById("nome"), area = document.getElementById("area"), texto = document.getElementById("texto");
+  function entrar(i) {
+    if (i === atual) return;
+    if (parar) parar();
+    if (atual >= 0) { if (!todos) C[atual].r.setAttribute("width", 0); C[atual].borda.setAttribute("stroke-opacity", 0); C[atual].bt.removeAttribute("aria-current"); }
+    atual = i;
+    var o = C[i], w = o.c.caixa[2];
+    veu.setAttribute("d", "M0,0H" + P.w + "V" + P.h + "H0Z" + o.c.d);
+    veu.setAttribute("fill-opacity", todos ? 0 : VEU);
+    o.borda.setAttribute("stroke-opacity", 1);
+    o.bt.setAttribute("aria-current", "true");
+    if (!todos) parar = animar(0, w, DUR, function (v) { o.r.setAttribute("width", v); });
+    nome.textContent = o.c.nome; varrerNome(0, 100, DUR);
+    area.textContent = o.c.m2 ? String(o.c.m2).replace(".", ",") + " m²" : "";
+    texto.textContent = o.c.texto || "";
+  }
+  function sair() {
+    if (atual < 0) return;
+    var o = C[atual], w = +o.r.getAttribute("width");
+    if (parar) parar();
+    o.borda.setAttribute("stroke-opacity", 0); o.bt.removeAttribute("aria-current");
+    veu.setAttribute("fill-opacity", 0);
+    varrerNome(100, 0, DUR * .6); area.textContent = ""; texto.textContent = "";
+    atual = -1;
+    if (!todos) parar = animar(w, 0, DUR * .6, function (v) { o.r.setAttribute("width", v); });
+  }
+  /* o que o painel de cor (ferramentas/painel.js) usa; a pagina publicada ignora */
+  window.LEITOR = {
+    P: P, C: C,
+    cor: function (i, hex) { C[i].fill.setAttribute("fill", hex); C[i].c.cor = hex; },
+    todos: function (sim) {
+      todos = sim; if (parar) parar();
+      C.forEach(function (o, i) { o.r.setAttribute("width", sim || i === atual ? o.c.caixa[2] : 0); });
+      veu.setAttribute("fill-opacity", !sim && atual >= 0 ? VEU : 0);
+    },
+    fundo: function () { veu.setAttribute("fill", getComputedStyle(document.body).backgroundColor); }
+  };
+  svg.addEventListener("mouseleave", sair);
+  document.addEventListener("click", function (e) { if (!svg.contains(e.target) && !indice.contains(e.target)) sair(); });
+})();
+</script>
+</body>
+</html>

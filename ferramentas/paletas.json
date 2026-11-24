@@ -1,0 +1,80 @@
+{
+ "_leia": "Paletas do Leitor de Planta, todas coloridas. 'cores' pintam os ambientes (no modo setor, na ordem: social, intimo, servico, molhado, circulacao, externo; se faltar cor, repete). 'pagina' veste a pagina: papel e o fundo, tinta e o texto, borda contorna o ambiente aceso. Cor que quase some no fundo (contraste < 1,25) ou que apaga a parede (contraste < 2) nao pinta ambiente.",
+ "paleta1": {
+  "nome": "Paleta 1",
+  "cores": [
+   "#EFCB84",
+   "#FFA9A5",
+   "#AD9547",
+   "#2488C5",
+   "#D2423A",
+   "#B2DD9E"
+  ],
+  "pagina": {
+   "papel": "#F4E4D9",
+   "tinta": "#2D3F35",
+   "borda": "#601A00"
+  }
+ },
+ "paleta2": {
+  "nome": "Paleta 2",
+  "cores": [
+   "#E68A58",
+   "#F5B1B8",
+   "#C3A05B",
+   "#9BC0CC",
+   "#4482A3",
+   "#99B7A4",
+   "#818546"
+  ],
+  "pagina": {
+   "papel": "#FFE4D2",
+   "tinta": "#884529",
+   "borda": "#884529"
+  }
+ },
+ "paleta3": {
+  "nome": "Paleta 3",
+  "cores": [
+   "#DF8B77",
+   "#A2A5B9",
+   "#648A86",
+   "#94CCC5"
+  ],
+  "pagina": {
+   "papel": "#E3DCC7",
+   "tinta": "#331C1C",
+   "borda": "#681D0E"
+  }
+ },
+ "paleta4": {
+  "nome": "Paleta 4",
+  "cores": [
+   "#C49D7F",
+   "#988AA4",
+   "#C17F4F",
+   "#D3CBDE",
+   "#D1D8B7",
+   "#A8B378"
+  ],
+  "pagina": {
+   "papel": "#F8F4E7",
+   "tinta": "#71675B",
+   "borda": "#71675B"
+  }
+ },
+ "paleta5": {
+  "nome": "Paleta 5",
+  "cores": [
+   "#E2725B",
+   "#D6D0E0",
+   "#C4A882",
+   "#A8B89A"
+  ],
+  "pagina": {
+   "papel": "#F4EBD9",
+   "tinta": "#3D2B1F",
+   "borda": "#3D2B1F"
+  }
+ }
+}

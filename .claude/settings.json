@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3 -m venv .venv)",
+      "Bash(.venv/bin/pip install -r ferramentas/requisitos.txt)",
+      "Bash(.venv/bin/python ferramentas/*)",
+      "Bash(open saida/*)",
+      "Edit(/planta/**)",
+      "Write(/planta/**)"
+    ]
+  }
+}
